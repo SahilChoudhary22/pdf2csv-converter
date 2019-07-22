@@ -19,8 +19,11 @@ All the converters on the internet just fill the complete image in a single cell
 ## How it Works
                 
 It works in 3 steps
+
 **Step 1** - Conversion of PDF to JPG
+
 **Step 2** - Conversion of JPG to TXT
+
 **Step 3** - ~~Conversion~~ Formatting of TXT to CSV
 
 
