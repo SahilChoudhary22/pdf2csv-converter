@@ -5,6 +5,9 @@
 - Supports one page at a time
 - Easy to use, seperate file for inputting file name according to the user's requirement
 
+## Update
+- Added CLI and config.ini
+
 
 # PDF2CSV - Converter
 
@@ -48,12 +51,11 @@ It works in 3 steps
 ## How to use
                
 
-1) Open the `pdf2csv.py` file in your favourite text editor.
-2) Edit the fields according to your requirements i.e. the file you want to convert.
-3) Run `pdf2csv.py` in cmd/terminal/Power shell by
+1) Open the `config.ini` file in your favourite text editor.
+2) In cmd/terminal/Power shell enter
        
-	   python pdf2csv.py
-4) Profit!
+	   python pdf2csv.py filetoconvert.pdf
+3) DONE!	   
 
 
 ## Modules involved
@@ -63,3 +65,5 @@ It works in 3 steps
 - pytesseract
 - os
 - pdf2image
+- argeparse
+- configparser
