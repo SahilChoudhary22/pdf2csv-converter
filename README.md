@@ -54,9 +54,10 @@ It works in 3 steps
 1) Open the `config.ini` file in your favourite text editor.
 2) In cmd/terminal/Power shell enter
        
-	   python pdf2csv.py filetoconvert.pdf
-3) DONE!	   
+	   python pdf2csv.py -i filetoconvert.pdf
+3) DONE!
 
+PS - type `python pdf2csv.py -h` to see all available arguements in command line.
 
 ## Modules involved
 
