@@ -1,12 +1,13 @@
 ## Features
 - Converts PDF to CSV, JPG and TXT
-- Compatible with python 3, tried only on Windows
+- Compatible with python 3
 - Super Small in size (the .py files only)
 - Supports one page at a time
-- Easy to use, seperate file for inputting file name according to the user's requirement
 
-## Update
+## *Updates*
 - Added CLI and config.ini
+- Now outputs with the same filename as the source (but in csv format ofcourse)
+- added pathlib library, so it'll probably work in all operating systems
 
 
 # PDF2CSV - Converter
@@ -57,6 +58,12 @@ It works in 3 steps
 	   python pdf2csv.py -i filetoconvert.pdf
 3) DONE!
 
+Tip - If you want to convert a file in different folder, in cmd, put full address, eg.
+
+	   python pdf2.csv.py -i "C:\Users\narut\someRandomFolder\samplefile.pdf"
+
+It is advised to put the address in double inverted commas because it avoids error due to folder with spaces in their name.
+
 PS - type `python pdf2csv.py -h` to see all available arguements in command line.
 
 ## Modules involved
@@ -68,3 +75,4 @@ PS - type `python pdf2csv.py -h` to see all available arguements in command line
 - pdf2image
 - argeparse
 - configparser
+- pathlib
