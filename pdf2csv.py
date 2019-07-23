@@ -22,6 +22,7 @@ from pdf2image.exceptions import (
 import csv
 import argparse
 from configparser import ConfigParser
+import pathlib
 
 
 # Argparse implementation
@@ -36,13 +37,20 @@ args = parser.parse_args()
 
 # This is basically the main() function
 def pdf_to_csv(filename,first_page, last_page, userpw):
+    
     print_header()
     #Step 1 - PDF to JPG
     pdf_to_jpg(filename, first_page, last_page, userpw, popplerLoc = load_config()[0])
     #Step 2 - JPG to TXT
-    jpg_to_txt(tesseractLoc = load_config()[1])
+    jpg_to_txt(tesseractLoc = load_config()[1], filename = filename)
     #Step 3 - TXT to CSV
-    txt_to_csv()
+    txt_to_csv(filename)
+
+
+# this function will get us the path everytime
+def get_path_of_source(filename):
+    p = pathlib.Path(filename)
+    return p
 
 
 # simple print function which prints header    
@@ -50,6 +58,7 @@ def print_header():
     print("|----------------------------------------|")
     print("|---------PDF to CSV Converter-----------|")
     print("|----------------------------------------|")
+
 
 ## ConfigParser implementation
 def load_config():
@@ -64,27 +73,33 @@ def load_config():
 def pdf_to_jpg(filename, firstpage, lastpage, userpw, popplerLoc):
     images = convert_from_path(filename, dpi=500, first_page=firstpage, 
     last_page=lastpage, userpw=userpw, poppler_path=popplerLoc)
+    
+    # using return value of the get_path_of_source function
+    filenameOfOutput = get_path_of_source(filename).with_suffix(".jpg")
     for image in images:
-        image.save("out.jpg", 'JPEG')
-    print("Converted to JPG...Saving to : out.jpg") 
+        image.save(filenameOfOutput, 'JPEG')
+    print("Converted to JPG...Saving to : {}".format(filenameOfOutput)) 
 
 
 # this is sub-function of jpg_to_txt, it is below this function
 def save_to_file_as_txt(filename, text):
-        filenamenew = filename[:-3] + "txt"
-        print("Converted to TXT...Saving to : {}".format(filenamenew))
 
-        with open(filenamenew, 'w') as fout:
-            for entry in text:
-                fout.write(entry)
+    filenamenew = get_path_of_source(filename).with_suffix('.txt')
+    print("Converted to TXT...Saving to : {}".format(filenamenew))
+
+    with open(filenamenew, 'w') as fout:
+        for entry in text:
+            fout.write(entry)
 
 
 """ STEP 2 - Converting JPG to TXT using Tesseract-OCR """
-def jpg_to_txt(tesseractLoc):
+def jpg_to_txt(tesseractLoc, filename):
     # This is added so that python knows where the location of tesseract-OCR is
     pytesseract.pytesseract.tesseract_cmd = tesseractLoc
+    # again using the function return value
+    sourceImg = get_path_of_source(filename).with_suffix('.jpg')
     # Using pillow to open image
-    img = Image.open("out.jpg")
+    img = Image.open(sourceImg)
     filenameOfImg = img.filename
     text = pytesseract.image_to_string(img)
 
@@ -93,8 +108,8 @@ def jpg_to_txt(tesseractLoc):
 
 
 """Step 3 - Converting TXT to CSV """
-def txt_to_csv():
-    fileToRead = open("out.txt")
+def txt_to_csv(filename):
+    fileToRead = open(get_path_of_source(filename).with_suffix('.txt'))
     x = fileToRead.readlines()
     ConvertedfileAsList = []
 
@@ -111,16 +126,18 @@ def txt_to_csv():
         ConvertedfileAsList.append(strings_without_inverted_commas)
 
     # Function to save the CSV
-    def save_as_csv(data):
-        filename = "outputCSV.csv" #get_full_pathname(name)
+    def save_as_csv(data, filename):
+        filename = get_path_of_source(filename).with_suffix('.csv')
         print("Converted to CSV...Saving to : {}".format(filename))
 
         with open(filename, 'w') as fout:
             for entry in data:
                 fout.write(entry)
     # Calling save function
-    save_as_csv(ConvertedfileAsList)
+    save_as_csv(ConvertedfileAsList, filename)
 
 
+# this makes sure that the functions get executed only when the .py is run as main file not as a module
+# thereby making it useful for implementation in some other program
 if __name__ == '__main__':    
     pdf_to_csv(args.input, args.firstpage, args.lastpage, args.password)
