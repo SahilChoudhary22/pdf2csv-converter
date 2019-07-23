@@ -1,38 +1,126 @@
-import backend
+""" This is the core of the program, don't meddle with it unless you know what you
+are doing. Any contribution would be appreciated. The program works in the following steps 
+
+Step 1 - PDF to JPG conversion
+Step 2 - JPG to TXT conversion
+Step 3 - TXT to CSV conversion involving all the formatting
+
+"""
+#-------------------------------------------------------------
+
+
+# Importing relevant libraries
+import pytesseract
+from PIL import Image
 import os
-
-""" THIS PROGRAM ALSO CONVERTS PDF TO TXT and JPG, along with CSV """
-
-
-""" This is the file for users who don't want to dive into the deep programming,
-thus making it easier for them to convert files according to their needs.
-If you want to edit the code or want to check how this stuff is working,
-check backend.py """
-
-
-## ------- USER IS SUPPOSED TO EDIT THESE PARAMETERS ------------- ##
-# Edit it according to your filename
-filename = 'sample.pdf'
-
-# Select the page number to be converted
-first_page = None
-last_page = None
-
-# If the file has password, enter here WITHIN INVERTED COMMAS
-userpw = None
-
-# Enter here the location of your poppler folder
-popplerLoc = 'C:\\Users\\narut\\poppler-0.68.0\\bin'
-
-# Enter here the location of your tesseract-OCR folder
-tesseractLoc = 'C:\\Users\\narut\\AppData\\Local\\Tesseract-OCR\\tesseract.exe'
+from pdf2image import convert_from_path
+from pdf2image.exceptions import (
+    PDFInfoNotInstalledError,
+    PDFPageCountError,
+    PDFSyntaxError
+)
+import csv
+import argparse
+from configparser import ConfigParser
 
 
-# This does the job (Don't change these)
-backend.pdf_to_csv(filename, first_page, last_page, userpw, popplerLoc, tesseractLoc)
-
-
-# NOTE - the output will be 'outputCSV.csv'
+# Argparse implementation
+parser = argparse.ArgumentParser(description = 'Convert the PDF file')
+parser.add_argument('-i','--input', type = str, metavar= '', help='Enter here your input file path')
+parser.add_argument('-p','--password', type = str, metavar= '', help='Enter the password here if your pdf is password protected')
+parser.add_argument('-fp','--firstpage', type = int, metavar= '', help='Enter the first page you want to convert')
+parser.add_argument('-lp','--lastpage', type = int, metavar= '',help='Enter the last page you want to convert')
+args = parser.parse_args()
 
 
 
+# This is basically the main() function
+def pdf_to_csv(filename,first_page, last_page, userpw):
+    print_header()
+    #Step 1 - PDF to JPG
+    pdf_to_jpg(filename, first_page, last_page, userpw, popplerLoc = load_config()[0])
+    #Step 2 - JPG to TXT
+    jpg_to_txt(tesseractLoc = load_config()[1])
+    #Step 3 - TXT to CSV
+    txt_to_csv()
+
+
+# simple print function which prints header    
+def print_header():
+    print("|----------------------------------------|")
+    print("|---------PDF to CSV Converter-----------|")
+    print("|----------------------------------------|")
+
+## ConfigParser implementation
+def load_config():
+    config = ConfigParser()
+    config.read('config.ini')
+    popplerLoc = config.get('settings', 'PopplerPath')
+    tesseractLoc = config.get('settings', 'TesseractPath')
+    return popplerLoc, tesseractLoc
+
+
+""" STEP 1 - Conversion of the pdf to img using pdf2image """
+def pdf_to_jpg(filename, firstpage, lastpage, userpw, popplerLoc):
+    images = convert_from_path(filename, dpi=500, first_page=firstpage, 
+    last_page=lastpage, userpw=userpw, poppler_path=popplerLoc)
+    for image in images:
+        image.save("out.jpg", 'JPEG')
+    print("Converted to JPG...Saving to : out.jpg") 
+
+
+# this is sub-function of jpg_to_txt, it is below this function
+def save_to_file_as_txt(filename, text):
+        filenamenew = filename[:-3] + "txt"
+        print("Converted to TXT...Saving to : {}".format(filenamenew))
+
+        with open(filenamenew, 'w') as fout:
+            for entry in text:
+                fout.write(entry)
+
+
+""" STEP 2 - Converting JPG to TXT using Tesseract-OCR """
+def jpg_to_txt(tesseractLoc):
+    # This is added so that python knows where the location of tesseract-OCR is
+    pytesseract.pytesseract.tesseract_cmd = tesseractLoc
+    # Using pillow to open image
+    img = Image.open("out.jpg")
+    filenameOfImg = img.filename
+    text = pytesseract.image_to_string(img)
+
+    #calling the function which was defined above this function
+    save_to_file_as_txt(filenameOfImg, text)
+
+
+"""Step 3 - Converting TXT to CSV """
+def txt_to_csv():
+    fileToRead = open("out.txt")
+    x = fileToRead.readlines()
+    ConvertedfileAsList = []
+
+
+    for i in x:
+        # We remove commas to avoid confusion between the numbers and actual cell, eg. 12,000 is twelve thousand
+        # not 12 and 000
+        without_comma = i.replace(",", "")
+        # then we add commas to the text
+        with_our_added_commas = without_comma.replace(" ", ",")
+        # this is to replace inverted commas which were causing problem in excel 
+        # as it thought every row was a single string
+        strings_without_inverted_commas = with_our_added_commas.replace("\"","")
+        ConvertedfileAsList.append(strings_without_inverted_commas)
+
+    # Function to save the CSV
+    def save_as_csv(data):
+        filename = "outputCSV.csv" #get_full_pathname(name)
+        print("Converted to CSV...Saving to : {}".format(filename))
+
+        with open(filename, 'w') as fout:
+            for entry in data:
+                fout.write(entry)
+    # Calling save function
+    save_as_csv(ConvertedfileAsList)
+
+
+if __name__ == '__main__':    
+    pdf_to_csv(args.input, args.firstpage, args.lastpage, args.password)
