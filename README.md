@@ -51,7 +51,7 @@ It works in 3 steps
 ## How to use
                
 
-1) Open the `config.ini` file in your favourite text editor.
+1) Open the `config.ini` file in your favourite text editor and enter in it, the path of 'poppler' bin directory and 'Tesseract' and save the file.
 2) In cmd/terminal/Power shell enter
        
 	   python pdf2csv.py -i filetoconvert.pdf
