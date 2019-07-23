@@ -60,7 +60,7 @@ It works in 3 steps
 
 Tip - If you want to convert a file in different folder, in cmd, put full address, eg.
 
-	   python pdf2.csv.py -i "C:\Users\narut\someRandomFolder\samplefile.pdf"
+	   python pdf2.csv.py -i "C:\Users\USERNAME\someRandomFolder\samplefile.pdf"
 
 It is advised to put the address in double inverted commas because it avoids error due to folder with spaces in their name.
 
