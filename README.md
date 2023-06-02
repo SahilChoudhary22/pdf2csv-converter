@@ -1,3 +1,6 @@
+## Important Update
+**We would like to inform you that we have made the decision to archive this repository and transition it to a read-only state. Given the advancements in AI-based alternatives, we are confident that there are now superior options accessible to our users.**
+
 ## Features
 - Converts PDF to CSV, JPG and TXT
 - Compatible with python 3
